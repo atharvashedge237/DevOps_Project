@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mlops-api.fullname" . }}-config
+  labels:
+    {{- include "mlops-api.labels" . | nindent 4 }}
+data:
+  LOG_LEVEL: "{{ .Values.env | first | .value }}"

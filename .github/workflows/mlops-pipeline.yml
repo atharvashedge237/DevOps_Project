@@ -1,0 +1,253 @@
+name: MLOps Pipeline - Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'app/**'
+      - 'docker/**'
+      - 'kubernetes/**'
+      - '.github/workflows/mlops-pipeline.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+  IMAGE_NAME: document-qa-api
+  HELM_CHART_PATH: kubernetes/helm-chart
+  KUBE_CONFIG_FILE: kubeconfig.txt
+
+jobs:
+  # Job 1: Test
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r app/requirements.txt
+
+      - name: Run unit tests
+        run: |
+          cd app
+          pytest test_main.py -v --cov=. --cov-report=xml
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./app/coverage.xml
+          fail_ci_if_error: false
+
+  # Job 2: Build & Push Docker Image
+  build-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    outputs:
+      image-tag: ${{ steps.image.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Azure Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Generate image tag
+        id: image
+        run: |
+          SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c 1-7)
+          if [[ "$GITHUB_REF" == "refs/heads/main" ]]; then
+            TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${SHORT_SHA}"
+            TAG_LATEST="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+          else
+            BRANCH_NAME=${GITHUB_REF#refs/heads/}
+            TAG="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${BRANCH_NAME}-${SHORT_SHA}"
+          fi
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "Image tag: $TAG"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          push: true
+          tags: ${{ steps.image.outputs.tag }}
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+
+      - name: Image scan with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ steps.image.outputs.tag }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Job 3: Deploy to AKS
+  deploy:
+    name: Deploy to AKS
+    runs-on: ubuntu-latest
+    needs: build-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://api.example.com
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.27.0'
+
+      - name: Configure kubectl context
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.13.0'
+
+      - name: Add Helm repositories
+        run: |
+          helm repo add stable https://charts.helm.sh/stable
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo update
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install mlops-api ${{ env.HELM_CHART_PATH }} \
+            --namespace production \
+            --create-namespace \
+            --values ${{ env.HELM_CHART_PATH }}/values.yaml \
+            --set image.registry=${{ env.REGISTRY }} \
+            --set image.repository=${{ env.IMAGE_NAME }} \
+            --set image.tag=${{ needs.build-push.outputs.image-tag }} \
+            --set imagePullSecrets[0].name=acr-credentials \
+            --wait \
+            --timeout 5m
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/mlops-api -n production
+          kubectl get pods -n production -l app=mlops-api
+
+      - name: Run smoke tests
+        run: |
+          # Wait for service to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=mlops-api \
+            -n production \
+            --timeout=300s
+          
+          # Port forward and test
+          kubectl port-forward svc/mlops-api 8000:80 -n production &
+          sleep 5
+          
+          curl -f http://localhost:8000/health || exit 1
+          echo "✅ Smoke tests passed"
+
+      - name: Setup Slack notification
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Deployment ${{ job.status }}: MLOps API to AKS'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          fields: repo,message,commit,author
+
+  # Job 4: Monitor Deployment
+  monitor:
+    name: Monitor Deployment Health
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl context
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Check pod status
+        run: |
+          kubectl get pods -n production -l app=mlops-api
+          READY_REPLICAS=$(kubectl get deployment mlops-api -n production -o jsonpath='{.status.readyReplicas}')
+          DESIRED_REPLICAS=$(kubectl get deployment mlops-api -n production -o jsonpath='{.spec.replicas}')
+          
+          if [ "$READY_REPLICAS" -eq "$DESIRED_REPLICAS" ]; then
+            echo "✅ All replicas are ready"
+          else
+            echo "❌ Not all replicas are ready: $READY_REPLICAS/$DESIRED_REPLICAS"
+            exit 1
+          fi
+
+      - name: Collect metrics
+        run: |
+          echo "Pod metrics:"
+          kubectl top pods -n production -l app=mlops-api || true
+          
+          echo "Node metrics:"
+          kubectl top nodes || true
+
+  # Job 5: Rollback on Failure
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [deploy, monitor]
+    if: failure()
+    steps:
+      - name: Configure kubectl context
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Rollback Helm release
+        run: |
+          helm rollback mlops-api -n production
+          echo "⚠️  Rolled back to previous stable version"
+
+      - name: Notify team
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'failure'
+          text: 'Deployment failed and rolled back: MLOps API'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
