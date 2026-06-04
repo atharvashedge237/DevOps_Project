@@ -5,6 +5,7 @@ A production-grade FastAPI application for document question-answering
 
 import os
 import logging
+import asyncio
 from typing import Optional
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
