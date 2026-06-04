@@ -1,3 +1,12 @@
+# setup-secrets.sh does:
+
+# create Azure managed identity
+# grant it Key Vault access
+# create Key Vault secrets
+# install CSI driver and AAD pod identity
+# create SecretProviderClass
+# bind the identity to app pods
+
 #!/bin/bash
 set -e
 
