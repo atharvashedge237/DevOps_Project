@@ -2,7 +2,7 @@
 
 This guide helps you troubleshoot issues and understand project components.
 
-## 📚 Documentation Map
+## Documentation Map
 
 | Document | Purpose | When to Read |
 |----------|---------|--------------|
@@ -276,7 +276,7 @@ kubectl get pods -n production --show-labels
 kubectl rollout restart deployment/prometheus -n monitoring
 ```
 
-## 🔧 Common Fixes
+## Common Fixes
 
 ### Reset Everything
 ```bash
@@ -330,7 +330,7 @@ docker volume prune -f
 docker system prune -a
 ```
 
-## 📊 Useful Commands
+## Useful Commands
 
 ### Viewing Logs
 ```bash
@@ -396,7 +396,7 @@ kubectl describe <resource-type> <name> -n <namespace>
 kubectl get <resource> <name> -n <namespace> -o yaml
 ```
 
-## 🆘 When All Else Fails
+## When All Else Fails
 
 ### Check System Health
 ```bash
@@ -422,7 +422,7 @@ kubectl get pvc -A
 4. **Check Azure status** - Service health dashboard
 5. **Open GitHub Issue** - With logs and context
 
-## 📞 Quick Reference
+## Quick Reference
 
 ### Important Endpoints (when port-forwarded)
 ```

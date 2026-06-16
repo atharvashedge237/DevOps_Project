@@ -1,6 +1,6 @@
 # MLOps Project - Quick Reference Card
 
-## 📖 Documentation Index
+## Documentation Index
 
 ### Getting Started (START HERE!)
 - **START_HERE.md** - Project orientation & learning paths
@@ -18,7 +18,7 @@
 
 ---
 
-## 🚀 Quick Start Commands
+## Quick Start Commands
 
 ### Local Development (5 min)
 ```bash
@@ -42,7 +42,7 @@ bash deploy.sh
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 mlops-pipeline/
@@ -57,7 +57,7 @@ mlops-pipeline/
 
 ---
 
-## 🎯 Key Components
+## Key Components
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
@@ -74,7 +74,7 @@ mlops-pipeline/
 
 ---
 
-## 🔄 CI/CD Pipeline Stages
+## CI/CD Pipeline Stages
 
 1. **Test** (20s) - pytest validation
 2. **Build** (3-5m) - Docker image creation
@@ -85,7 +85,7 @@ mlops-pipeline/
 
 ---
 
-## 📊 Key Metrics & Endpoints
+## Key Metrics & Endpoints
 
 ### API Endpoints (localhost:8000)
 - `/health` - Health check
@@ -102,7 +102,7 @@ mlops-pipeline/
 
 ---
 
-## 🏗️ Infrastructure Overview
+## Infrastructure Overview
 
 ```
 AKS Cluster (3 nodes)
@@ -124,7 +124,7 @@ AKS Cluster (3 nodes)
 
 ---
 
-## 📈 Scalability
+## Scalability
 
 - **Pods**: HPA scales 2-10 replicas based on CPU (>70%) or Memory (>80%)
 - **Nodes**: AKS VMSS adds nodes as needed
@@ -133,7 +133,7 @@ AKS Cluster (3 nodes)
 
 ---
 
-## 🔐 Security Features
+## Security Features
 
 ✓ Non-root container user
 ✓ Resource limits & requests
@@ -146,7 +146,7 @@ AKS Cluster (3 nodes)
 
 ---
 
-## 📊 Alert Rules
+## Alert Rules
 
 | Alert | Threshold | Action |
 |-------|-----------|--------|
@@ -159,7 +159,7 @@ AKS Cluster (3 nodes)
 
 ---
 
-## 💻 Common Commands
+## Common Commands
 
 ### Kubernetes
 ```bash
@@ -200,7 +200,7 @@ terraform state list
 
 ---
 
-## 🎓 Interview Talking Points
+## Interview Talking Points
 
 ### 30-Second Pitch
 "I built a production-grade MLOps pipeline with a FastAPI application, complete infrastructure as code using Terraform for Azure AKS, containerized with Docker, automated CI/CD with GitHub Actions, and comprehensive monitoring with Prometheus and Grafana."
@@ -224,7 +224,7 @@ Python, FastAPI, Docker, Kubernetes, Helm, Terraform, GitHub Actions, Prometheus
 
 ---
 
-## 🚨 Troubleshooting Quick Links
+## Troubleshooting Quick Links
 
 | Issue | Solution |
 |-------|----------|
@@ -237,7 +237,7 @@ Python, FastAPI, Docker, Kubernetes, Helm, Terraform, GitHub Actions, Prometheus
 
 ---
 
-## 📞 Getting Help
+## Getting Help
 
 1. **Quick answers** → QUICKSTART.md
 2. **Troubleshooting** → GETTING_HELP.md
@@ -247,7 +247,7 @@ Python, FastAPI, Docker, Kubernetes, Helm, Terraform, GitHub Actions, Prometheus
 
 ---
 
-## ⏱️ Time Estimates
+## Time Estimates
 
 | Task | Time |
 |------|------|
@@ -259,7 +259,7 @@ Python, FastAPI, Docker, Kubernetes, Helm, Terraform, GitHub Actions, Prometheus
 
 ---
 
-## 💰 Estimated Azure Costs
+## Estimated Azure Costs
 
 - **AKS**: $150-200/month
 - **ACR**: $10/month
@@ -269,7 +269,7 @@ Python, FastAPI, Docker, Kubernetes, Helm, Terraform, GitHub Actions, Prometheus
 
 ---
 
-## ✅ Production Readiness Checklist
+## Production Readiness Checklist
 
 ✓ Security (RBAC, secrets, scanning)
 ✓ High availability (HPA, anti-affinity)
@@ -285,12 +285,12 @@ Python, FastAPI, Docker, Kubernetes, Helm, Terraform, GitHub Actions, Prometheus
 ---
 
 **Last Updated:** June 2, 2026
-**Project Status:** ✅ Production-Ready
+**Project Status:** Production-Ready
 **Perfect For:** DevOps/SRE/Cloud Engineering Interviews
 
 ---
 
-## 🎯 Your Next Action
+## Your Next Action
 
 1. Open `START_HERE.md` in your editor
 2. Choose a learning path
@@ -298,4 +298,4 @@ Python, FastAPI, Docker, Kubernetes, Helm, Terraform, GitHub Actions, Prometheus
 4. Progress to Azure deployment
 5. Practice explaining each component
 
-**Good luck! 🚀**
+**Good luck!**

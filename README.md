@@ -2,7 +2,7 @@
 
 A production-grade MLOps project showcasing a complete DevOps pipeline for deploying an LLM-powered document Q&A application on Azure Kubernetes Service (AKS).
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)
@@ -15,7 +15,7 @@ A production-grade MLOps project showcasing a complete DevOps pipeline for deplo
 - [Security](#security)
 - [Troubleshooting](#troubleshooting)
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -48,7 +48,7 @@ A production-grade MLOps project showcasing a complete DevOps pipeline for deplo
                      └─→ Key Vault
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 mlops-pipeline/
@@ -92,7 +92,7 @@ mlops-pipeline/
 └── README.md                     # This file
 ```
 
-## 🔧 Prerequisites
+## Prerequisites
 
 ### Local Development
 - Docker & Docker Compose
@@ -110,7 +110,7 @@ mlops-pipeline/
 - GitHub account with repository access
 - Generate Personal Access Token (PAT) for CI/CD
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Clone Repository
 ```bash
@@ -143,7 +143,7 @@ pip install -r requirements.txt
 pytest test_main.py -v --cov=.
 ```
 
-## 💻 Local Development
+## Local Development
 
 ### Setup Python Environment
 ```bash
@@ -198,7 +198,7 @@ Content-Type: multipart/form-data
 GET /metrics
 ```
 
-## 🏗️ Infrastructure Setup
+## Infrastructure Setup
 
 ### 1. Azure Authentication
 ```bash
@@ -247,7 +247,7 @@ kubectl create namespace production
 kubectl create namespace monitoring
 ```
 
-## 📦 Container Registry Setup
+## Container Registry Setup
 
 ### Build and Push Image Manually
 ```bash
@@ -264,7 +264,7 @@ docker push mlopsacr.azurecr.io/document-qa-api:v1.0.0
 az acr repository list --name mlopsacr
 ```
 
-## 🚀 Deployment
+## Deployment
 
 ### Deploy with Helm
 
@@ -310,7 +310,7 @@ helm upgrade mlops-api kubernetes/helm-chart \
 helm rollback mlops-api -n production
 ```
 
-## 🔄 CI/CD Pipeline
+## CI/CD Pipeline
 
 ### GitHub Actions Workflow
 
@@ -340,7 +340,7 @@ cat ~/.kube/config | base64 | tr -d '\n'
 # Copy output to GitHub Secrets as KUBE_CONFIG
 ```
 
-## 📊 Monitoring
+## Monitoring
 
 ### Access Grafana
 ```bash
@@ -372,7 +372,7 @@ kubectl port-forward svc/prometheus 9090:9090 -n monitoring
 - Pod Crash Looping
 - Node Memory/Disk Pressure
 
-## 🔐 Security
+## Security
 
 ### Secrets Management
 
@@ -414,17 +414,17 @@ volumes:
 
 ### Security Best Practices Implemented
 
-✅ Non-root container user
-✅ Resource limits (CPU/Memory)
-✅ Network policies
-✅ RBAC for service accounts
-✅ Secrets encryption
-✅ Image scanning (Trivy)
-✅ Pod security policies
-✅ Ingress with TLS
-✅ Horizontal pod autoscaling
+Non-root container user
+Resource limits (CPU/Memory)
+Network policies
+RBAC for service accounts
+Secrets encryption
+Image scanning (Trivy)
+Pod security policies
+Ingress with TLS
+Horizontal pod autoscaling
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Check Pod Logs
 ```bash
@@ -492,7 +492,7 @@ Configured to scale based on:
 ### Node Scaling
 Terraform AKS cluster uses virtual machine scale sets for automatic node scaling.
 
-## 🔄 Maintenance
+## Maintenance
 
 ### Update Dependencies
 ```bash
@@ -517,7 +517,7 @@ helm get values mlops-api -n production > backup.yaml
 kubectl get all -n production -o yaml > backup.yaml
 ```
 
-## 📚 Learning Resources
+## Learning Resources
 
 - [Azure Kubernetes Service](https://learn.microsoft.com/azure/aks/)
 - [Helm Documentation](https://helm.sh/docs/)
@@ -525,27 +525,3 @@ kubectl get all -n production -o yaml > backup.yaml
 - [Prometheus & Grafana](https://prometheus.io/docs/)
 - [FastAPI](https://fastapi.tiangolo.com/)
 - [GitHub Actions](https://docs.github.com/en/actions)
-
-## 🤝 Contributing
-
-1. Create feature branch: `git checkout -b feature/amazing-feature`
-2. Commit changes: `git commit -m 'Add amazing feature'`
-3. Push to branch: `git push origin feature/amazing-feature`
-4. Open Pull Request
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
-## 👥 Author
-
-Created as a resume project for DevOps/MLOps interviews.
-
-## 📞 Support
-
-For issues and questions, please create a GitHub issue or contact the maintainers.
-
----
-
-**Last Updated:** June 2, 2026
-**Status:** Production-Ready ✅
