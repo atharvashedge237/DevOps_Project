@@ -1,8 +1,3 @@
-"""
-Document Q&A API powered by LLM
-A production-grade FastAPI application for document question-answering
-"""
-
 import os
 import logging
 import asyncio
@@ -56,7 +51,7 @@ class QuestionResponse(BaseModel):
     confidence: float
     inference_time_ms: float
 
-# Mock document store (in production, use a database)
+# Mock document store (Need to use actual API calls)
 DOCUMENTS = {
     "doc1": "Kubernetes is an open-source container orchestration platform. It automates deployment, scaling, and management of containerized applications.",
     "doc2": "DevOps is a set of practices that combines software development and IT operations. It aims to shorten development cycles and increase deployment frequency.",

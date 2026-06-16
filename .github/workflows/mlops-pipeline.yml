@@ -238,7 +238,7 @@ jobs:
       - name: Rollback Helm release
         run: |
           helm rollback mlops-api -n production
-          echo "⚠️  Rolled back to previous stable version"
+          echo "Rolled back to previous stable version"
 
       - name: Notify team
         uses: 8398a7/action-slack@v3
