@@ -1,4 +1,3 @@
-# Alert rules for MLOps infrastructure
 # Purpose: Prometheus alerting rules that evaluate metrics and fire alerts when conditions are met; grouped for API, Kubernetes, and resource concerns.
 
 groups:
