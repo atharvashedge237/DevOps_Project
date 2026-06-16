@@ -1,3 +1,5 @@
+# prometheus-deployment.yaml provisions Prometheus (config + alert rules), exposes it via a ClusterIP service, and creates the necessary ServiceAccount + ClusterRole/Binding so Prometheus can discover and scrape the mlops-api pods in the production namespace; it uses a ConfigMap for configuration and an ephemeral volume for storage.
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
