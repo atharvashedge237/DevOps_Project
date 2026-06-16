@@ -108,7 +108,7 @@ env:
   - name: PORT
     value: "8000"
 
-# Secrets from Azure Key Vault
+# Secrets stored in Azure Key Vault
 secrets:
   - name: OPENAI_API_KEY
     keyVaultName: mlops-vault

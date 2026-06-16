@@ -1,7 +1,3 @@
-"""
-Unit tests for Document Q&A API
-"""
-
 import pytest
 from fastapi.testclient import TestClient
 from main import app

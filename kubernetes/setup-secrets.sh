@@ -10,7 +10,7 @@
 #!/bin/bash
 set -e
 
-echo "🔐 Setting up Secrets Management with Azure Key Vault..."
+echo "Setting up Secrets Management with Azure Key Vault..."
 
 # Variables
 RESOURCE_GROUP="mlops-rg"
@@ -20,13 +20,13 @@ NAMESPACE="production"
 IDENTITY_NAME="mlops-identity"
 
 # Create managed identity for AKS
-echo "📝 Creating managed identity..."
+echo "Creating managed identity..."
 IDENTITY=$(az identity create \
   --resource-group $RESOURCE_GROUP \
   --name $IDENTITY_NAME \
   --query id -o tsv)
 
-echo "✅ Managed identity created: $IDENTITY"
+echo "Managed identity created: $IDENTITY"
 
 # Get managed identity details
 CLIENT_ID=$(az identity show \
@@ -43,16 +43,16 @@ echo "Client ID: $CLIENT_ID"
 echo "Principal ID: $PRINCIPAL_ID"
 
 # Add role assignment for Key Vault access
-echo "🔑 Granting Key Vault access..."
+echo "Granting Key Vault access..."
 az role assignment create \
   --role "Key Vault Secrets User" \
   --assignee-object-id $PRINCIPAL_ID \
   --scope /subscriptions/$(az account show --query id -o tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.KeyVault/vaults/$VAULT_NAME
 
-echo "✅ Key Vault access granted"
+echo "Key Vault access granted"
 
 # Create secrets in Key Vault
-echo "🔒 Creating secrets in Key Vault..."
+echo "Creating secrets in Key Vault..."
 az keyvault secret set \
   --vault-name $VAULT_NAME \
   --name openai-api-key \
@@ -63,7 +63,7 @@ az keyvault secret set \
   --name db-connection-string \
   --value "your-db-connection-string-here"
 
-echo "✅ Secrets created"
+echo "Secrets created"
 
 # Install Azure Key Vault CSI Driver
 echo "📦 Installing Azure Key Vault CSI Driver..."
@@ -75,7 +75,7 @@ helm install csi-secrets-store-provider-azure csi-secrets-store-provider-azure/c
   --set secrets-store-csi-driver.install=true \
   --set secrets-store-csi-driver.syncSecret.enabled=true
 
-echo "✅ CSI Driver installed"
+echo "CSI Driver installed"
 
 # Install AAD Pod Identity
 echo "📦 Installing AAD Pod Identity..."
@@ -85,10 +85,10 @@ helm repo update
 helm install aad-pod-identity aad-pod-identity/aad-pod-identity \
   --namespace kube-system
 
-echo "✅ AAD Pod Identity installed"
+echo "AAD Pod Identity installed"
 
 # Create namespace and secrets provider
-echo "📋 Creating SecretProviderClass..."
+echo "Creating SecretProviderClass..."
 kubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -
 
 cat > secrets-provider-updated.yaml << EOF
@@ -142,10 +142,10 @@ EOF
 
 kubectl apply -f identity-binding.yaml
 
-echo "✅ Secrets management setup complete!"
+echo "Secrets management setup complete!"
 
 echo ""
-echo "🎯 Next steps:"
+echo "Next steps:"
 echo "1. Update your Deployment to mount the secrets:"
 echo "   - Add volumeMount for secrets-store"
 echo "   - Add aadpodidbinding label"

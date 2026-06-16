@@ -270,4 +270,4 @@ These show you're thinking about real-world integration.
 
 ---
 
-**Good luck with your interviews! 🚀**
+**Good luck with your interviews!**

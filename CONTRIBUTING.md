@@ -98,4 +98,4 @@ Include:
 
 Create a GitHub Discussion or issue.
 
-Thanks for contributing! 🎉
+Thanks for contributing!

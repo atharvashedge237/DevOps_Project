@@ -12,11 +12,11 @@ keywords:
   - kubernetes
 
 maintainers:
-  - name: DevOps Team
-    email: devops@example.com
+  - name: Atharva Shedge
+    email: atharvashedge237@gmail.com
 
-home: https://github.com/yourusername/mlops-pipeline
+home: https://github.com/atharvashedge237/DevOps_Project
 sources:
-  - https://github.com/yourusername/mlops-pipeline
+  - https://github.com/atharvashedge237/DevOps_Project
 
 dependencies: []
