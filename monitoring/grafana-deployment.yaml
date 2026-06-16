@@ -1,0 +1,159 @@
+# Purpose: Deploy Grafana and provision a prebuilt dashboard for MLOps API monitoring.
+# ConfigMap: grafana-dashboards contains mlops-dashboard.json (panels for request rate, P95 latency, P99 inference, CPU/memory, restarts).
+# Deployment: Single-replica Grafana pod with env (admin password from secret), plugin install, health checks, resource requests/limits.
+# Volumes: Dashboard ConfigMap mounted for auto-provisioning; emptyDir used for storage (ephemeral).
+# Service & Secret: LoadBalancer service exposing port 3000; grafana-secrets holds admin-password.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: monitoring
+data:
+  mlops-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "MLOps API Monitoring",
+        "panels": [
+          {
+            "title": "API Request Rate",
+            "targets": [
+              {
+                "expr": "sum(rate(api_requests_total[5m])) by (status)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "API Request Duration (P95)",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le, endpoint))"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "LLM Inference Duration (P99)",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.99, sum(rate(inference_duration_seconds_bucket[5m])) by (le, model))"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Pod CPU Usage",
+            "targets": [
+              {
+                "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"mlops-api.*\"}[5m])) by (pod)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Pod Memory Usage",
+            "targets": [
+              {
+                "expr": "sum(container_memory_usage_bytes{pod=~\"mlops-api.*\"}) by (pod) / 1024 / 1024"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Pod Restart Count",
+            "targets": [
+              {
+                "expr": "sum(kube_pod_container_status_restarts_total{namespace=\"production\"}) by (pod)"
+              }
+            ],
+            "type": "stat"
+          }
+        ]
+      }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: GF_SECURITY_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: grafana-secrets
+              key: admin-password
+        - name: GF_INSTALL_PLUGINS
+          value: "grafana-piechart-panel"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        volumeMounts:
+        - name: storage
+          mountPath: /var/lib/grafana
+        - name: dashboards
+          mountPath: /etc/grafana/provisioning/dashboards
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+      volumes:
+      - name: storage
+        emptyDir: {}
+      - name: dashboards
+        configMap:
+          name: grafana-dashboards
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: monitoring
+  labels:
+    app: grafana
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: http
+  selector:
+    app: grafana
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-secrets
+  namespace: monitoring
+type: Opaque
+stringData:
+  admin-password: "changeit#devopsproject"

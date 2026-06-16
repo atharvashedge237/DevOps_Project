@@ -1,0 +1,102 @@
+# .gitignore file for MLOps Pipeline
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Kubernetes
+kubeconfig.txt
+*.kubeconfig
+
+# Credentials and secrets
+.env
+.env.local
+.env.*.local
+secrets.yaml
+*-secrets.yaml
+.aws/
+.azure/
+.gcp/
+
+# Logs
+*.log
+logs/
+
+# Artifacts
+*.zip
+*.tar.gz
+dist/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Node modules (if using any JS tools)
+node_modules/
+package-lock.json
+
+# Temporary files
+*.tmp
+*.temp
+.#*

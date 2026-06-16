@@ -1,0 +1,124 @@
+# Alert rules for MLOps infrastructure
+# Purpose: Prometheus alerting rules that evaluate metrics and fire alerts when conditions are met; grouped for API, Kubernetes, and resource concerns.
+
+groups:
+  - name: mlops_api_alerts
+    interval: 30s
+    rules:
+      # API Availability Alerts
+      - alert: APIHighErrorRate
+        expr: |
+          (
+            sum(rate(api_requests_total{status=~"5.."}[5m]))
+            /
+            sum(rate(api_requests_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "API has high error rate"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+
+      - alert: APIHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(api_request_duration_seconds_bucket[5m])) by (le, endpoint))
+          > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "API has high latency"
+          description: "P95 latency is {{ $value }}s for endpoint {{ $labels.endpoint }}"
+
+      - alert: InferenceLagHigh
+        expr: |
+          histogram_quantile(0.99, sum(rate(inference_duration_seconds_bucket[5m])) by (le, model))
+          > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: inference
+        annotations:
+          summary: "LLM inference is slow"
+          description: "P99 inference time is {{ $value }}s for model {{ $labels.model }}"
+
+  - name: kubernetes_alerts
+    interval: 30s
+    rules:
+      # Pod Alerts
+      - alert: PodCrashLooping
+        expr: |
+          rate(kube_pod_container_status_restarts_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          component: kubernetes
+        annotations:
+          summary: "Pod is crash looping"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting frequently"
+
+      - alert: PodNotHealthy
+        expr: |
+          min_over_time(sum by(namespace, pod) (kube_pod_status_phase{phase=~"Pending|Unknown|Failed"})[10m:1m]) > 0
+        for: 10m
+        labels:
+          severity: warning
+          component: kubernetes
+        annotations:
+          summary: "Pod is unhealthy"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not healthy"
+
+      # Node Alerts
+      - alert: NodeMemoryPressure
+        expr: |
+          kube_node_status_condition{condition="MemoryPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: critical
+          component: kubernetes
+        annotations:
+          summary: "Node has memory pressure"
+          description: "Node {{ $labels.node }} is under memory pressure"
+
+      - alert: NodeDiskPressure
+        expr: |
+          kube_node_status_condition{condition="DiskPressure",status="true"} == 1
+        for: 5m
+        labels:
+          severity: critical
+          component: kubernetes
+        annotations:
+          summary: "Node has disk pressure"
+          description: "Node {{ $labels.node }} is under disk pressure"
+
+  - name: resource_alerts
+    interval: 30s
+    rules:
+      - alert: PodHighCPUUsage
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{pod=~"mlops-api.*"}[5m])) by (pod)
+          > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "Pod has high CPU usage"
+          description: "Pod {{ $labels.pod }} CPU usage is above 80%"
+
+      - alert: PodHighMemoryUsage
+        expr: |
+          sum(container_memory_usage_bytes{pod=~"mlops-api.*"}) by (pod)
+          /
+          sum(container_spec_memory_limit_bytes{pod=~"mlops-api.*"}) by (pod)
+          > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: resources
+        annotations:
+          summary: "Pod has high memory usage"
+          description: "Pod {{ $labels.pod }} memory usage is above 90%"
