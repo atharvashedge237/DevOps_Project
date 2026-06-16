@@ -1,4 +1,4 @@
-# Multi-stage build for production-grade image
+# Multi-stage build
 FROM python:3.11-slim as builder
 
 WORKDIR /build
