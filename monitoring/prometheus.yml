@@ -1,4 +1,6 @@
 # Prometheus configuration for MLOps monitoring
+# This config makes Prometheus discover and scrape your cluster (API, nodes, pods) and specifically the mlops-api pods in production every 15s.
+# Alerts defined in alert-rules.yml are evaluated by Prometheus and routed to Alertmanager.
 
 global:
   scrape_interval: 15s
