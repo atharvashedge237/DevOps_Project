@@ -6,21 +6,21 @@ A **production-grade MLOps Pipeline** for deploying an LLM-powered Document Q&A 
 
 ## What's Included
 
-### ✅ Application (app/)
+### Application (app/)
 - **FastAPI** REST API with document Q&A endpoint
 - **Prometheus metrics** integration for monitoring
 - **Unit tests** with pytest
 - Multi-endpoint design: `/ask`, `/documents`, `/upload`, `/metrics`, `/health`
 - Mock LLM inference with latency tracking
 
-### ✅ Containerization (docker/)
+### Containerization (docker/)
 - **Multi-stage Dockerfile** for optimized image size
 - **Docker Compose** for local development (includes Prometheus & Grafana)
 - Non-root user security best practice
 - Health checks configured
 - `.dockerignore` for clean build context
 
-### ✅ Infrastructure as Code (terraform/)
+### Infrastructure as Code (terraform/)
 - **AKS Cluster** with configurable nodes and version
 - **Azure Container Registry (ACR)** for image storage
 - **Azure Key Vault** for secrets management
@@ -30,7 +30,7 @@ A **production-grade MLOps Pipeline** for deploying an LLM-powered Document Q&A 
 - Terraform state management via Azure backend
 - Deployment automation script
 
-### ✅ Kubernetes Deployment (kubernetes/)
+### Kubernetes Deployment (kubernetes/)
 - **Helm Charts** for production deployment
 - **Deployment template** with resource limits and health checks
 - **Horizontal Pod Autoscaler (HPA)** - scales 2-10 replicas based on CPU/Memory
@@ -40,7 +40,7 @@ A **production-grade MLOps Pipeline** for deploying an LLM-powered Document Q&A 
 - **Secrets integration** with Azure Key Vault via CSI driver
 - Pod anti-affinity for high availability
 
-### ✅ CI/CD Pipeline (.github/workflows/)
+### CI/CD Pipeline (.github/workflows/)
 - **GitHub Actions** workflow with 5 job stages:
   1. **Test** - pytest on Python code
   2. **Build & Push** - Docker image to ACR
@@ -52,7 +52,7 @@ A **production-grade MLOps Pipeline** for deploying an LLM-powered Document Q&A 
 - Smoke tests post-deployment
 - Slack notifications for status
 
-### ✅ Monitoring Stack (monitoring/)
+### Monitoring Stack (monitoring/)
 - **Prometheus** for metrics collection
   - Kubernetes cluster monitoring
   - Pod metrics (CPU, Memory, Restarts)
@@ -69,14 +69,14 @@ A **production-grade MLOps Pipeline** for deploying an LLM-powered Document Q&A 
   - Pod crash loops
   - Node resource pressure
 
-### ✅ Secrets Management (kubernetes/)
+### Secrets Management (kubernetes/)
 - **Azure Key Vault** integration
 - **CSI Secret Provider** for secure secret mounting
 - **Pod Identity** binding for authentication
 - Secrets rotation documentation
 - Secure credential injection into containers
 
-### ✅ Documentation
+### Documentation
 - **README.md** - Comprehensive setup and deployment guide
 - **QUICKSTART.md** - Fast reference for common tasks
 - **CONTRIBUTING.md** - Guidelines for contributors
@@ -198,19 +198,19 @@ This project demonstrates:
 
 ## Interview Highlights
 
-🎯 **Full Production Pipeline** - Not just a basic app, but enterprise-grade infrastructure
+**Full Production Pipeline** - Not just a basic app, but enterprise-grade infrastructure
 
-🎯 **Security First** - Demonstrates security awareness (Key Vault, RBAC, scanning)
+**Security First** - Demonstrates security awareness (Key Vault, RBAC, scanning)
 
-🎯 **Automation** - Everything is automated and reproducible
+**Automation** - Everything is automated and reproducible
 
-🎯 **Monitoring** - Shows understanding of observability and operations
+**Monitoring** - Shows understanding of observability and operations
 
-🎯 **Best Practices** - Follows industry standards and recommendations
+**Best Practices** - Follows industry standards and recommendations
 
-🎯 **Scalability** - HPA, VMSS, proper resource management
+**Scalability** - HPA, VMSS, proper resource management
 
-🎯 **Documentation** - Professional-grade guides and comments
+**Documentation** - Professional-grade guides and comments
 
 ## Time to Deploy
 
@@ -268,5 +268,5 @@ Perfect for:
 ---
 
 **Created:** June 2, 2026
-**Status:** Complete & Production-Ready ✅
-**Last Updated:** June 2, 2026
+**Status:** Complete & Production-Ready
+**Last Updated:** June 16, 2026
