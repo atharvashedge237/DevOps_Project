@@ -1,3 +1,9 @@
+# Purpose: Deploy Grafana and provision a prebuilt dashboard for MLOps API monitoring.
+# ConfigMap: grafana-dashboards contains mlops-dashboard.json (panels for request rate, P95 latency, P99 inference, CPU/memory, restarts).
+# Deployment: Single-replica Grafana pod with env (admin password from secret), plugin install, health checks, resource requests/limits.
+# Volumes: Dashboard ConfigMap mounted for auto-provisioning; emptyDir used for storage (ephemeral).
+# Service & Secret: LoadBalancer service exposing port 3000; grafana-secrets holds admin-password.
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -150,4 +156,4 @@ metadata:
   namespace: monitoring
 type: Opaque
 stringData:
-  admin-password: "changeme123"
+  admin-password: "changeit#devopsproject"
