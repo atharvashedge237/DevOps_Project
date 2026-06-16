@@ -22,7 +22,6 @@ env:
   KUBE_CONFIG_FILE: kubeconfig.txt
 
 jobs:
-  # Job 1: Test
   test:
     name: Run Tests
     runs-on: ubuntu-latest
@@ -52,7 +51,6 @@ jobs:
           file: ./app/coverage.xml
           fail_ci_if_error: false
 
-  # Job 2: Build & Push Docker Image
   build-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
@@ -110,7 +108,6 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-  # Job 3: Deploy to AKS
   deploy:
     name: Deploy to AKS
     runs-on: ubuntu-latest
@@ -176,7 +173,7 @@ jobs:
           sleep 5
           
           curl -f http://localhost:8000/health || exit 1
-          echo "✅ Smoke tests passed"
+          echo "Smoke tests passed"
 
       - name: Setup Slack notification
         if: always()
@@ -187,7 +184,6 @@ jobs:
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
           fields: repo,message,commit,author
 
-  # Job 4: Monitor Deployment
   monitor:
     name: Monitor Deployment Health
     runs-on: ubuntu-latest
@@ -213,9 +209,9 @@ jobs:
           DESIRED_REPLICAS=$(kubectl get deployment mlops-api -n production -o jsonpath='{.spec.replicas}')
           
           if [ "$READY_REPLICAS" -eq "$DESIRED_REPLICAS" ]; then
-            echo "✅ All replicas are ready"
+            echo "All replicas are ready"
           else
-            echo "❌ Not all replicas are ready: $READY_REPLICAS/$DESIRED_REPLICAS"
+            echo "Not all replicas are ready: $READY_REPLICAS/$DESIRED_REPLICAS"
             exit 1
           fi
 
@@ -227,7 +223,6 @@ jobs:
           echo "Node metrics:"
           kubectl top nodes || true
 
-  # Job 5: Rollback on Failure
   rollback:
     name: Rollback on Failure
     runs-on: ubuntu-latest
