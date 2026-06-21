@@ -98,3 +98,9 @@ package-lock.json
 *.tmp
 *.temp
 .#*
+
+# Kubeconfig / kube files
+kubeconfig.yaml
+kubeconfig.yml
+
+*tfplan*

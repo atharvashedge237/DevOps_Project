@@ -1,0 +1,2 @@
+{"status":"healthy","version":"1.0.0"}
+pod "demo-curl" deleted from default namespace

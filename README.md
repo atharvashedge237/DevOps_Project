@@ -19,7 +19,7 @@ A production-grade MLOps project showcasing a complete DevOps pipeline for deplo
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                         GitHub Repository                        │
+│                         GitHub Repository                       │
 │  Push code → GitHub Actions CI/CD Pipeline                      │
 └────────────┬────────────────────────────────────────────────────┘
              │

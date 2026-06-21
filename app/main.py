@@ -168,21 +168,68 @@ async def mock_llm_inference(question: str, document: str) -> str:
     Mock LLM inference function
     In production, replace with actual LLM API calls (OpenAI, LLaMA, etc.)
     """
-    # Simulate network latency
+    # If Azure OpenAI is configured, use it. Otherwise fall back to the simple mock.
+    azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+    azure_key = os.getenv("AZURE_OPENAI_KEY")
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")  # deployment name (model) in Azure OpenAI
+    max_tokens = int(os.getenv("MAX_TOKENS", "150"))
+
+    if azure_endpoint and azure_key and deployment:
+        # Build a prompt that provides the document context and the user question
+        prompt = (
+            "You are an assistant that answers questions using only the provided document. "
+            "If the answer is not contained in the document, say you cannot answer.\n\n"
+            f"Document:\n{document}\n\nQuestion:\n{question}\n\nAnswer:"
+        )
+
+        url = f"{azure_endpoint.rstrip('/')}/openai/deployments/{deployment}/chat/completions?api-version=2023-05-15"
+
+        payload = {
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant. Answer briefly and cite the document when relevant."},
+                {"role": "user", "content": prompt}
+            ],
+            "max_tokens": max_tokens,
+            "temperature": 0.0
+        }
+
+        import httpx
+
+        headers = {
+            "api-key": azure_key,
+            "Content-Type": "application/json"
+        }
+
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                r = await client.post(url, headers=headers, json=payload)
+                r.raise_for_status()
+                data = r.json()
+
+                # Azure Chat completions response: choices[0].message.content
+                if "choices" in data and len(data["choices"]) > 0:
+                    choice = data["choices"][0]
+                    # Support both chat-style and completion-style responses
+                    if "message" in choice and "content" in choice["message"]:
+                        return choice["message"]["content"].strip()
+                    if "text" in choice:
+                        return choice["text"].strip()
+
+                # Fallback to a simple message if response shape unexpected
+                return "(no answer returned from LLM)"
+        except Exception as e:
+            logger.error(f"Error calling Azure OpenAI: {e}")
+            # Fall back to mock behaviour on error
+
+    # --- Fallback mock inference ---
     await asyncio.sleep(0.1)
-    
-    # Simple heuristic-based answer generation
     keywords = question.lower().split()
-    doc_lower = document.lower()
-    
-    # Find relevant sentence
     sentences = document.split('.')
     best_sentence = max(
         (s.strip() for s in sentences if any(kw in s.lower() for kw in keywords)),
         default=sentences[0].strip(),
         key=len
     )
-    
     return best_sentence + "."
 
 if __name__ == "__main__":

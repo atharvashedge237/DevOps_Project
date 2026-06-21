@@ -1,0 +1,1 @@
+{"question":"Give a brief demo summary of the project.","answer":"It automates deployment, scaling, and management of containerized applications.","confidence":0.92,"inference_time_ms":99.23648834228516}pod "demo-curl" deleted from default namespace

@@ -5,4 +5,4 @@ metadata:
   labels:
     {{- include "mlops-api.labels" . | nindent 4 }}
 data:
-  LOG_LEVEL: "{{ .Values.env | first | .value }}"
+  LOG_LEVEL: "{{ (first .Values.env).value }}"
