@@ -48,6 +48,14 @@ A production-grade MLOps project showcasing a complete DevOps pipeline for deplo
                      └─→ Key Vault
 ```
 
+## Recent Changes (June 2026)
+
+- **Multi-architecture container builds:** The project now uses Docker Buildx and publishes multi-arch images (linux/amd64 and linux/arm64) to support heterogeneous registries and clusters. See "Container Registry Setup" for build & push commands.
+- **Helm chart Key Vault support:** The Helm chart has been extended to optionally use the Azure Key Vault Secrets Store CSI provider via a SecretProviderClass. Values and templates live in kubernetes/helm-chart (see values.yaml and templates/secretproviderclass.yaml).
+- **Terraform updates:** Terraform configuration added some variables and adjusted AKS settings; see terraform/main.tf for details.
+- **App dependency:** The FastAPI app now requires the multipart dependency for file uploads (python-multipart). See app/requirements.txt.
+- **Secrets fallback:** If the Secrets Store CSI driver/provider isn't installed in the cluster, the deployment supports a fallback using a Kubernetes Secret (example: mlops-api-kv) containing AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_KEY.
+
 ## Project Structure
 
 ```
@@ -100,6 +108,8 @@ mlops-pipeline/
 - kubectl CLI
 - Helm 3.x
 - Terraform >= 1.0
+
+  - Note: the application uses multipart form uploads and requires python-multipart (included in app/requirements.txt).
 
 ### Azure Setup
 - Azure Account with active subscription
@@ -231,6 +241,12 @@ terraform init -backend-config="resource_group_name=tfstate-rg" \
 bash deploy.sh
 ```
 
+Terraform configurations were updated to add/require additional variables and to pin a supported AKS Kubernetes version and VM SKU. Review terraform/main.tf and terraform/terraform.tfvars before running deploy.sh.
+
+### Azure OpenAI / Model Deployment
+
+To use a real cloud LLM instead of the app's mock fallback, create a model deployment in your Azure OpenAI (Cognitive Services) account. A common test name used in this project is mlops-test. The app expects these environment variables (or Key Vault secrets) to be present: AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_KEY, AZURE_OPENAI_DEPLOYMENT. If a deployment is missing, the app falls back to a local/mock answer for demos.
+
 ### 4. Configure kubectl
 ```bash
 az aks get-credentials \
@@ -254,14 +270,24 @@ kubectl create namespace monitoring
 # Login to ACR
 az acr login --name mlopsacr
 
-# Build image
+# Single-arch build (simple)
 docker build -f docker/Dockerfile -t mlopsacr.azurecr.io/document-qa-api:v1.0.0 .
-
-# Push to ACR
 docker push mlopsacr.azurecr.io/document-qa-api:v1.0.0
+
+# Recommended: multi-arch build and push (Buildx)
+docker buildx create --use --name mlops-builder
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -f docker/Dockerfile \
+  -t <ACR_LOGIN_SERVER>/document-qa-api:v1.0.0 \
+  --push .
+
+# Verify manifest contains amd64 (important for AKS nodes running amd64)
+docker buildx imagetools inspect <ACR_LOGIN_SERVER>/document-qa-api:v1.0.0
 
 # List images
 az acr repository list --name mlopsacr
+
+Ensure the pushed image manifest includes an amd64 entry if your AKS nodes are amd64; otherwise pods may fail to pull with platform mismatch errors.
 ```
 
 ## Deployment
@@ -273,6 +299,8 @@ az acr repository list --name mlopsacr
 # Edit kubernetes/helm-chart/values.yaml
 # Update image registry, repository, and tag
 ```
+
+To enable Key Vault CSI integration, configure the keyVault block in kubernetes/helm-chart/values.yaml and (optionally) enable creation of the SecretProviderClass. If your cluster does not have the Secrets Store CSI driver and the Azure provider installed, either install those components or use the fallback Kubernetes secret approach described below.
 
 **2. Create ACR credentials secret**
 ```bash
@@ -290,6 +318,13 @@ helm install mlops-api kubernetes/helm-chart \
   --namespace production \
   --values kubernetes/helm-chart/values.yaml
 ```
+
+If you prefer not to use the CSI provider (or the driver isn't installed), create a Kubernetes secret containing the Azure OpenAI endpoint and key and reference it from the deployment's envFrom. Example:
+
+kubectl create secret generic mlops-api-kv \
+  --from-literal=AZURE_OPENAI_ENDPOINT="https://<your-endpoint>.openai.azure.com/" \
+  --from-literal=AZURE_OPENAI_KEY="<your-key>" \
+  -n production
 
 **4. Verify deployment**
 ```bash
@@ -387,6 +422,8 @@ This script:
 - Sets up RBAC permissions
 - Installs CSI Secret Provider
 - Configures pod identity binding
+
+Note: the setup script attempts to install the Secrets Store CSI driver and Azure Key Vault provider, and to configure managed identity and RBAC. In some clusters the CSI driver or provider may not be available or may require manual installation; in that case the Helm chart supports syncing Key Vault secrets into a Kubernetes Secret as a fallback. See kubernetes/helm-chart/values.yaml and templates/secretproviderclass.yaml for configuration and examples.
 
 #### Add Secrets to Key Vault
 ```bash
