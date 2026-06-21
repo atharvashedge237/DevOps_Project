@@ -212,6 +212,12 @@ resource "azurerm_application_insights" "main" {
   tags = {
     Environment = var.environment
   }
+
+  lifecycle {
+    ignore_changes = [
+      workspace_id,
+    ]
+  }
 }
 
 # Outputs
