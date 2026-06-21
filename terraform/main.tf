@@ -10,6 +10,7 @@ terraform {
 
 provider "azurerm" {
   features {}
+  subscription_id = var.subscription_id
 }
 
 # Variables
@@ -55,6 +56,24 @@ variable "vm_size" {
   description = "VM size for nodes"
 }
 
+variable "subscription_id" {
+  type        = string
+  default     = ""
+  description = "Optional Azure subscription id to target (overrides CLI/ENV if provided)"
+}
+
+variable "acr_name" {
+  type        = string
+  default     = ""
+  description = "Optional ACR name to override generated name"
+}
+
+variable "keyvault_name" {
+  type        = string
+  default     = ""
+  description = "Optional Key Vault name to override generated name"
+}
+
 # Create resource group
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name
@@ -84,7 +103,7 @@ resource "azurerm_subnet" "aks" {
 
 # Create Container Registry
 resource "azurerm_container_registry" "acr" {
-  name                = replace("${var.cluster_name}acr", "-", "")
+  name                = var.acr_name != "" ? var.acr_name : replace("${var.cluster_name}acr", "-", "")
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   sku                 = "Standard"
@@ -125,20 +144,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
     dns_service_ip = "10.1.0.10"
   }
 
-  addon_profile {
-    aci_connector_linux {
-      enabled = false
-    }
-    azure_policy {
-      enabled = false
-    }
-    http_application_routing {
-      enabled = false
-    }
-    kube_dashboard {
-      enabled = false
-    }
-  }
 
   tags = {
     Environment = var.environment
@@ -154,7 +159,7 @@ resource "azurerm_role_assignment" "aks_acr" {
 
 # Create Key Vault for secrets
 resource "azurerm_key_vault" "vault" {
-  name                       = "${var.cluster_name}-vault"
+  name                       = var.keyvault_name != "" ? var.keyvault_name : "${var.cluster_name}-vault"
   location                   = azurerm_resource_group.main.location
   resource_group_name        = azurerm_resource_group.main.name
   enabled_for_disk_encryption = true
