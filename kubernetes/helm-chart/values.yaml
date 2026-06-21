@@ -5,7 +5,7 @@ replicaCount: 3
 
 image:
   registry: mlopsacr6a347507.azurecr.io
-  repository: mlopsacr6a347507.azurecr.io/mlops-api
+  repository: mlops-api
   pullPolicy: IfNotPresent
   tag: "latest"
 
