@@ -102,3 +102,5 @@ package-lock.json
 # Kubeconfig / kube files
 kubeconfig.yaml
 kubeconfig.yml
+
+*tfplan*

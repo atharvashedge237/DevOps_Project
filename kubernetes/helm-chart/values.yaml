@@ -4,8 +4,8 @@
 replicaCount: 3
 
 image:
-  registry: acrname.azurecr.io
-  repository: document-qa-api
+  registry: mlopsacr6a347507.azurecr.io
+  repository: mlopsacr6a347507.azurecr.io/mlops-api
   pullPolicy: IfNotPresent
   tag: "latest"
 
