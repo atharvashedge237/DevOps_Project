@@ -114,6 +114,23 @@ secrets:
     keyVaultName: mlops-vault
     secretName: openai-api-key
 
+# Key Vault / Secrets Store CSI settings
+keyVault:
+  enabled: false
+  # Name of the SecretProviderClass to use (must exist or be created separately)
+  secretProviderClassName: azure-keyvault-provider
+  # If true, Helm will render a SecretProviderClass resource (you must provide tenantID and keyVaultName)
+  createSecretProviderClass: false
+  # Key Vault name and tenant id to use when creating the SecretProviderClass
+  keyVaultName: mlops-vault
+  tenantID: ""
+  # If true, mount secrets via the CSI driver into the container at `mountPath`
+  mountEnabled: false
+  mountPath: /mnt/secrets-store
+  # If true, assume SecretProviderClass syncs secrets to a Kubernetes Secret and
+  # load them into env via `envFrom`. `k8sSecretName` is the target secret name.
+  syncToK8sSecret: true
+  k8sSecretName: "" # defaults to release fullname + -kv when empty
 persistence:
   enabled: false
   storageClassName: "default"

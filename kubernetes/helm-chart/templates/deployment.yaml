@@ -52,16 +52,35 @@ spec:
         envFrom:
         - configMapRef:
             name: {{ include "mlops-api.fullname" . }}-config
+        {{- if .Values.keyVault.syncToK8sSecret }}
+        - secretRef:
+            name: {{ default (printf "%s-kv" (include "mlops-api.fullname" .)) .Values.keyVault.k8sSecretName }}
+        {{- end }}
         {{- if .Values.persistence.enabled }}
         volumeMounts:
         - name: data
           mountPath: {{ .Values.persistence.mountPath }}
+        {{- end }}
+        {{- if .Values.keyVault.mountEnabled }}
+        volumeMounts:
+        - name: secrets-store-inline
+          mountPath: {{ .Values.keyVault.mountPath }}
+          readOnly: true
         {{- end }}
       {{- if .Values.persistence.enabled }}
       volumes:
       - name: data
         persistentVolumeClaim:
           claimName: {{ include "mlops-api.fullname" . }}-pvc
+      {{- end }}
+      {{- if .Values.keyVault.mountEnabled }}
+      volumes:
+      - name: secrets-store-inline
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: "{{ .Values.keyVault.secretProviderClassName }}"
       {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
